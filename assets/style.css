@@ -1,0 +1,75 @@
+/* Background */
+
+.stApp {
+    background-color: #f5f7fb;
+}
+
+/* Title */
+
+h1 {
+    color: #1f77b4;
+    text-align: center;
+}
+
+/* Sub Headings */
+
+h2, h3 {
+    color: #0f172a;
+}
+
+/* Sidebar */
+
+section[data-testid="stSidebar"] {
+    background-color: #0f172a;
+}
+
+section[data-testid="stSidebar"] * {
+    color: white;
+}
+
+/* Upload Box */
+
+[data-testid="stFileUploader"] {
+    border: 2px dashed #1f77b4;
+    border-radius: 12px;
+    padding: 15px;
+}
+
+/* Buttons */
+
+.stButton > button {
+    background-color: #1f77b4;
+    color: white;
+    border-radius: 10px;
+    border: none;
+    height: 50px;
+    width: 100%;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.stButton > button:hover {
+    background-color: #125d9b;
+}
+
+/* Metric Cards */
+
+[data-testid="stMetric"] {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid #d9d9d9;
+    box-shadow: 0px 2px 8px rgba(0,0,0,0.08);
+}
+
+/* Progress Bar */
+
+.stProgress > div > div {
+    border-radius: 10px;
+}
+
+/* Success / Info Boxes */
+
+[data-testid="stAlert"] {
+    border-radius: 10px;
+}
