@@ -1,58 +1,30 @@
-# 📄 ResumeAI Analyzer
+# ResumeAI Analyzer
 
-An AI-powered Resume Analyzer built using Python, Streamlit and Google Gemini API.
+An AI-powered Resume Analyzer built with Python, Streamlit and Google Gemini.
 
 ## Features
 
-- ATS Score
+- ATS Resume Score
+- Job Match Score
 - Resume Summary
 - Skills Detection
 - Missing Skills
-- Strengths & Weaknesses
-- Job Match Score
 - AI Suggestions
+- Cover Letter Generator
+- Resume PDF Report
+- Resume History (SQLite)
 
 ## Tech Stack
 
 - Python
 - Streamlit
 - Google Gemini API
-- PyPDF2
+- SQLite
+- ReportLab
+- Plotly
 
 ## Installation
 
 ```bash
-git clone https://github.com/yourusername/ResumeAI_Analyzer.git
-
-cd ResumeAI_Analyzer
-
-python -m venv venv
-
-venv\Scripts\activate
-
 pip install -r requirements.txt
-
 streamlit run app.py
-```
-
-## Folder Structure
-
-```
-ResumeAI_Analyzer/
-│
-├── app.py
-├── analyzer.py
-├── pdf_reader.py
-├── prompts.py
-├── config.py
-├── requirements.txt
-├── README.md
-├── .env
-├── assets/
-│   └── style.css
-└── screenshots/
-```
-
-## Author
-
-Shazib Huda

@@ -1,13 +1,13 @@
 ATS_PROMPT = """
 You are an expert ATS Resume Analyzer.
 
-Analyze the resume against the Job Description.
+Analyze the following resume against the job description.
 
 Resume:
-{resume}
+__RESUME__
 
 Job Description:
-{job_description}
+__JOB_DESCRIPTION__
 
 Return ONLY valid JSON.
 
@@ -23,14 +23,14 @@ Return ONLY valid JSON.
         "Strong Python knowledge"
     ],
     "weaknesses": [
-        "No SQL project"
+        "No SQL projects"
     ],
     "missing_skills": [
         "Docker",
         "AWS"
     ],
     "suggestions": [
-        "Add SQL projects",
+        "Build SQL projects",
         "Learn Docker"
     ]
 }

@@ -1,60 +1,173 @@
-def create_report(result):
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer
+)
 
-    report = ""
+from reportlab.lib.styles import getSampleStyleSheet
 
-    report += "==============================\n"
-    report += "     AI Resume Analysis Report\n"
-    report += "==============================\n\n"
 
-    report += f"ATS Score : {result.get('ats_score', 0)}/100\n"
-    report += f"Job Match : {result.get('job_match', 0)}%\n\n"
+# ---------------- Resume Report ---------------- #
 
-    # Summary
-    report += "Resume Summary\n"
-    report += "------------------------------\n"
-    report += result.get("summary", "No Summary") + "\n\n"
+def generate_pdf(result, filename="Resume_Analysis_Report.pdf"):
 
-    # Skills
-    report += "Skills\n"
-    report += "------------------------------\n"
+    doc = SimpleDocTemplate(filename)
 
-    for skill in result.get("skills", []):
-        report += f"• {skill}\n"
+    styles = getSampleStyleSheet()
 
-    report += "\n"
+    content = []
 
-    # Missing Skills
-    report += "Missing Skills\n"
-    report += "------------------------------\n"
+    content.append(
+        Paragraph(
+            "ResumeAI Analyzer Report",
+            styles["Title"]
+        )
+    )
 
-    for skill in result.get("missing_skills", []):
-        report += f"• {skill}\n"
+    content.append(Spacer(1, 20))
 
-    report += "\n"
+    content.append(
+        Paragraph(
+            f"ATS Score: {result['ats_score']}/100",
+            styles["Heading2"]
+        )
+    )
 
-    # Strengths
-    report += "Strengths\n"
-    report += "------------------------------\n"
+    if "job_match" in result:
 
-    for item in result.get("strengths", []):
-        report += f"• {item}\n"
+        content.append(
+            Paragraph(
+                f"Job Match: {result['job_match']}%",
+                styles["Heading2"]
+            )
+        )
 
-    report += "\n"
+    content.append(Spacer(1, 10))
 
-    # Weaknesses
-    report += "Weaknesses\n"
-    report += "------------------------------\n"
+    content.append(
+        Paragraph(
+            "Resume Summary",
+            styles["Heading2"]
+        )
+    )
 
-    for item in result.get("weaknesses", []):
-        report += f"• {item}\n"
+    content.append(
+        Paragraph(
+            result["summary"],
+            styles["BodyText"]
+        )
+    )
 
-    report += "\n"
+    content.append(Spacer(1, 10))
 
-    # Suggestions
-    report += "Suggestions\n"
-    report += "------------------------------\n"
+    content.append(
+        Paragraph(
+            "Skills",
+            styles["Heading2"]
+        )
+    )
 
-    for item in result.get("suggestions", []):
-        report += f"• {item}\n"
+    for skill in result["skills"]:
+        content.append(
+            Paragraph(
+                "• " + skill,
+                styles["BodyText"]
+            )
+        )
 
-    return report
+    content.append(Spacer(1, 10))
+
+    content.append(
+        Paragraph(
+            "Strengths",
+            styles["Heading2"]
+        )
+    )
+
+    for item in result["strengths"]:
+        content.append(
+            Paragraph(
+                "• " + item,
+                styles["BodyText"]
+            )
+        )
+
+    content.append(Spacer(1, 10))
+
+    content.append(
+        Paragraph(
+            "Weaknesses",
+            styles["Heading2"]
+        )
+    )
+
+    for item in result["weaknesses"]:
+        content.append(
+            Paragraph(
+                "• " + item,
+                styles["BodyText"]
+            )
+        )
+
+    content.append(Spacer(1, 10))
+
+    content.append(
+        Paragraph(
+            "Suggestions",
+            styles["Heading2"]
+        )
+    )
+
+    for item in result["suggestions"]:
+        content.append(
+            Paragraph(
+                "• " + item,
+                styles["BodyText"]
+            )
+        )
+
+    doc.build(content)
+
+    return filename
+
+
+# ---------------- Cover Letter PDF ---------------- #
+
+def generate_cover_letter_pdf(
+    cover_letter,
+    filename="Cover_Letter.pdf"
+):
+
+    doc = SimpleDocTemplate(filename)
+
+    styles = getSampleStyleSheet()
+
+    content = []
+
+    content.append(
+        Paragraph(
+            "Professional Cover Letter",
+            styles["Title"]
+        )
+    )
+
+    content.append(Spacer(1, 20))
+
+    paragraphs = cover_letter.split("\n")
+
+    for para in paragraphs:
+
+        if para.strip():
+
+            content.append(
+                Paragraph(
+                    para,
+                    styles["BodyText"]
+                )
+            )
+
+            content.append(Spacer(1, 8))
+
+    doc.build(content)
+
+    return filename

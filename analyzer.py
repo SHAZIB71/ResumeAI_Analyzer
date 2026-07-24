@@ -1,6 +1,9 @@
 import json
+
 from google import genai
+
 from config import GEMINI_API_KEY, MODEL_NAME
+from prompts import ATS_PROMPT
 
 
 class ResumeAnalyzer:
@@ -10,47 +13,11 @@ class ResumeAnalyzer:
 
     def analyze(self, resume_text, job_description=""):
 
-        prompt = f"""
-You are an ATS Resume Expert.
-
-Analyze the following resume and job description.
-
-Resume:
-{resume_text}
-
-Job Description:
-{job_description}
-
-Return ONLY valid JSON.
-
-Example:
-
-{{
-    "ats_score": 85,
-    "job_match": 80,
-    "summary": "Short professional summary.",
-    "skills": [
-        "Python",
-        "Java"
-    ],
-    "strengths": [
-        "Strong Projects"
-    ],
-    "weaknesses": [
-        "Needs SQL"
-    ],
-    "missing_skills": [
-        "SQL",
-        "React"
-    ],
-    "suggestions": [
-        "Add SQL projects",
-        "Improve ATS keywords"
-    ]
-}}
-
-Do not write anything except JSON.
-"""
+        prompt = ATS_PROMPT.replace(
+            "__RESUME__", resume_text
+        ).replace(
+            "__JOB_DESCRIPTION__", job_description
+        )
 
         try:
 
@@ -61,19 +28,21 @@ Do not write anything except JSON.
 
             text = response.text.strip()
 
-            # Remove markdown if Gemini returns ```json
-            text = text.replace("```json", "")
-            text = text.replace("```", "")
-            text = text.strip()
+            if text.startswith("```json"):
+                text = text.replace("```json", "")
+
+            text = text.replace("```", "").strip()
 
             return json.loads(text)
 
         except Exception as e:
 
+            print(e)
+
             return {
                 "ats_score": 0,
                 "job_match": 0,
-                "summary": f"AI Service Error:\n\n{str(e)}",
+                "summary": f"AI Error: {e}",
                 "skills": [],
                 "strengths": [],
                 "weaknesses": [],
