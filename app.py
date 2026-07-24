@@ -1,3 +1,6 @@
+from io import BytesIO
+from pathlib import Path
+
 import streamlit as st
 
 from pdf_reader import extract_text_from_pdf
@@ -30,6 +33,23 @@ from utils.advanced_features import (
     export_text_to_docx
 )
 from config import API_CONFIGURED
+
+SAMPLE_RESUME_PATH = Path(__file__).parent / "sample_resume.pdf"
+SAMPLE_JOB_DESCRIPTION = (
+    "Seeking a Python developer with experience in Streamlit, APIs, "
+    "data analysis, and building user-friendly applications."
+)
+
+
+def get_resume_source(uploaded_file):
+    if uploaded_file is not None:
+        st.session_state["use_sample_resume"] = False
+        return uploaded_file
+
+    if st.session_state.get("use_sample_resume", False) and SAMPLE_RESUME_PATH.exists():
+        return BytesIO(SAMPLE_RESUME_PATH.read_bytes())
+
+    return None
 
 
 # ---------------- PAGE CONFIG ---------------- #
@@ -121,10 +141,17 @@ else:
 
 # ---------------- FILE UPLOAD ---------------- #
 
-uploaded_file = st.file_uploader(
-    "📄 Upload Resume",
-    type=["pdf"]
-)
+col1, col2 = st.columns([3, 1])
+
+with col1:
+    uploaded_file = st.file_uploader(
+        "📄 Upload Resume",
+        type=["pdf"]
+    )
+
+with col2:
+    if st.button("🧪 Try Sample Resume", use_container_width=True):
+        st.session_state["use_sample_resume"] = True
 
 job_description = st.text_area(
     "🎯 Paste Job Description (Optional)",
@@ -132,10 +159,18 @@ job_description = st.text_area(
     placeholder="Paste Job Description here..."
 )
 
-st.info(
-    "💡 Tip: Upload a clear PDF resume and optionally paste a job description "
-    "for better AI-powered matching."
+resume_source = get_resume_source(uploaded_file)
+effective_job_description = job_description or (
+    SAMPLE_JOB_DESCRIPTION if st.session_state.get("use_sample_resume", False) else ""
 )
+
+if st.session_state.get("use_sample_resume", False) and resume_source is not None:
+    st.info("🧪 Demo mode is active. The built-in sample resume is being used.")
+else:
+    st.info(
+        "💡 Tip: Upload a clear PDF resume and optionally paste a job description "
+        "for better AI-powered matching."
+    )
 
 
 # ---------------- COVER LETTER ---------------- #
@@ -144,21 +179,21 @@ st.divider()
 
 st.subheader("💌 AI Cover Letter")
 
-if uploaded_file:
+if resume_source is not None:
 
     if st.button("📝 Generate Cover Letter", disabled=not API_CONFIGURED):
 
         with st.spinner("Generating Cover Letter..."):
 
             resume_text = extract_text_from_pdf(
-                uploaded_file
+                resume_source
             )
 
             generator = CoverLetterGenerator()
 
             cover_letter = generator.generate(
                 resume_text,
-                job_description
+                effective_job_description
             )
 
         st.success("✅ Cover Letter Generated")
@@ -194,12 +229,15 @@ if uploaded_file:
 
 # ---------------- ANALYZE BUTTON ---------------- #
 
-if uploaded_file:
+if resume_source is not None:
 
-    st.success("✅ Resume Uploaded Successfully")
+    if uploaded_file is not None:
+        st.success("✅ Resume Uploaded Successfully")
+    else:
+        st.success("✅ Sample resume loaded successfully")
 
     try:
-        preview_text = extract_text_from_pdf(uploaded_file)
+        preview_text = extract_text_from_pdf(resume_source)
         preview = preview_text[:1200]
         if preview:
             with st.expander("📝 Preview extracted resume text"):
@@ -212,14 +250,14 @@ if uploaded_file:
         with st.spinner("Analyzing Resume..."):
 
             resume_text = extract_text_from_pdf(
-                uploaded_file
+                resume_source
             )
 
             analyzer = ResumeAnalyzer()
 
             result = analyzer.analyze(
                 resume_text,
-                job_description
+                effective_job_description
             )
 
         st.session_state["result"] = result
@@ -514,9 +552,9 @@ if "result" in st.session_state:
 
 st.subheader("🧰 Career Toolkit")
 
-if uploaded_file:
+if resume_source is not None:
     try:
-        resume_text = extract_text_from_pdf(uploaded_file)
+        resume_text = extract_text_from_pdf(resume_source)
         toolkit_tab1, toolkit_tab2, toolkit_tab3, toolkit_tab4 = st.tabs([
             "✍️ Resume Rewriter",
             "🎤 Interview Prep",
