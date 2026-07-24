@@ -21,7 +21,15 @@ from database import (
 )
 
 from streamlit_extras.metric_cards import style_metric_cards
-from utils.grading import resume_grade
+from utils.grading import grade_description
+from utils.advanced_features import (
+    build_resume_rewriter,
+    build_interview_prep,
+    build_linkedin_optimizer,
+    build_email_generator,
+    export_text_to_docx
+)
+from config import API_CONFIGURED
 
 
 # ---------------- PAGE CONFIG ---------------- #
@@ -101,6 +109,15 @@ st.write(
     "Upload your resume and get an AI-powered ATS analysis."
 )
 
+if not API_CONFIGURED:
+    st.warning(
+        "⚠️ Gemini API is not configured yet. "
+        "Add your GEMINI_API_KEY to your environment or .env file "
+        "to enable AI analysis and cover letter generation."
+    )
+else:
+    st.success("✅ Gemini AI is ready to analyze your resume.")
+
 
 # ---------------- FILE UPLOAD ---------------- #
 
@@ -115,6 +132,11 @@ job_description = st.text_area(
     placeholder="Paste Job Description here..."
 )
 
+st.info(
+    "💡 Tip: Upload a clear PDF resume and optionally paste a job description "
+    "for better AI-powered matching."
+)
+
 
 # ---------------- COVER LETTER ---------------- #
 
@@ -124,7 +146,7 @@ st.subheader("💌 AI Cover Letter")
 
 if uploaded_file:
 
-    if st.button("📝 Generate Cover Letter"):
+    if st.button("📝 Generate Cover Letter", disabled=not API_CONFIGURED):
 
         with st.spinner("Generating Cover Letter..."):
 
@@ -176,7 +198,16 @@ if uploaded_file:
 
     st.success("✅ Resume Uploaded Successfully")
 
-    if st.button("🚀 Analyze Resume"):
+    try:
+        preview_text = extract_text_from_pdf(uploaded_file)
+        preview = preview_text[:1200]
+        if preview:
+            with st.expander("📝 Preview extracted resume text"):
+                st.text(preview)
+    except Exception as e:
+        st.warning(f"Preview unavailable: {e}")
+
+    if st.button("🚀 Analyze Resume", disabled=not API_CONFIGURED):
 
         with st.spinner("Analyzing Resume..."):
 
@@ -197,6 +228,10 @@ if uploaded_file:
 
         st.success("✅ Analysis Completed")
         # ---------------- DISPLAY RESULTS ---------------- #
+
+if st.button("🧹 Clear Results"):
+    st.session_state.pop("result", None)
+    st.success("✅ Results cleared.")
 
 if "result" in st.session_state:
 
@@ -246,7 +281,7 @@ if "result" in st.session_state:
 
     # ---------------- RESUME GRADE ---------------- #
 
-    grade, status = resume_grade(score)
+    grade, status, description = grade_description(score)
 
     st.subheader("🏆 Resume Grade")
 
@@ -265,6 +300,8 @@ if "result" in st.session_state:
             "Performance",
             status
         )
+
+    st.info(description)
 
     st.divider()
 
@@ -472,6 +509,73 @@ if "result" in st.session_state:
         st.error(f"PDF Generation Error: {e}")
 
     st.divider()
+
+# ---------------- CAREER TOOLKIT ---------------- #
+
+st.subheader("🧰 Career Toolkit")
+
+if uploaded_file:
+    try:
+        resume_text = extract_text_from_pdf(uploaded_file)
+        toolkit_tab1, toolkit_tab2, toolkit_tab3, toolkit_tab4 = st.tabs([
+            "✍️ Resume Rewriter",
+            "🎤 Interview Prep",
+            "💼 LinkedIn Optimizer",
+            "📧 Email Generator"
+        ])
+
+        with toolkit_tab1:
+            rewrite = build_resume_rewriter(resume_text, job_description)
+            st.write(rewrite["title"])
+            st.text_area(
+                "Enhanced Summary",
+                value=rewrite["summary"],
+                height=120
+            )
+            st.write("Suggested bullets:")
+            for bullet in rewrite["bullets"]:
+                st.write("-", bullet)
+
+        with toolkit_tab2:
+            prep = build_interview_prep(resume_text, job_description)
+            st.write(prep["title"])
+            for q in prep["questions"]:
+                st.write("-", q)
+            st.write("Tips:")
+            for tip in prep["tips"]:
+                st.write("-", tip)
+
+        with toolkit_tab3:
+            linkedin = build_linkedin_optimizer(resume_text, job_description)
+            st.write(linkedin["headline"])
+            st.text_area("About section", value=linkedin["about"], height=140)
+
+        with toolkit_tab4:
+            email = build_email_generator("Software Developer", "Your Company")
+            st.text_input("Subject", value=email["subject"])
+            st.text_area("Email Body", value=email["body"], height=220)
+
+        st.divider()
+
+        if st.button("📄 Export as DOCX"):
+            docx_path = "resume_toolkit.docx"
+            export_text_to_docx(resume_text[:4000], docx_path)
+            with open(docx_path, "rb") as docx_file:
+                st.download_button(
+                    "Download DOCX",
+                    data=docx_file,
+                    file_name="resume_toolkit.docx",
+                    mime=(
+                        "application/vnd.openxmlformats-officedocument."
+                        "wordprocessingml.document.main"
+                    )
+                )
+    except Exception as e:
+        st.warning(f"Career toolkit unavailable: {e}")
+else:
+    st.info("Upload a resume to unlock the Career Toolkit features.")
+
+st.divider()
 
 # ---------------- HISTORY ---------------- #
 

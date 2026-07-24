@@ -1,16 +1,23 @@
 from google import genai
 
-from config import GEMINI_API_KEY, MODEL_NAME
+from config import GEMINI_API_KEY, MODEL_NAME, API_CONFIGURED
 
 
 class CoverLetterGenerator:
 
     def __init__(self):
-        self.client = genai.Client(
-            api_key=GEMINI_API_KEY
-        )
+        self.client = None
+        if API_CONFIGURED and GEMINI_API_KEY:
+            self.client = genai.Client(api_key=GEMINI_API_KEY)
 
     def generate(self, resume_text, job_description):
+
+        if not self.client:
+            return (
+                "Cover letter generation is unavailable because the Gemini "
+                "API key is not configured. Please set GEMINI_API_KEY in "
+                "your environment or .env file."
+            )
 
         prompt = f"""
 You are a professional HR Recruiter and Career Coach.

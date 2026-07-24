@@ -1,7 +1,9 @@
 ATS_PROMPT = """
-You are an expert ATS Resume Analyzer.
+You are an expert ATS Resume Analyzer and HR-tech evaluator.
 
-Analyze the following resume against the job description.
+Analyze the provided resume against the given job description.
+Focus on ATS friendliness, relevance, clarity, keyword alignment,
+and hiring potential.
 
 Resume:
 __RESUME__
@@ -9,8 +11,7 @@ __RESUME__
 Job Description:
 __JOB_DESCRIPTION__
 
-Return ONLY valid JSON.
-
+Return ONLY valid JSON with this exact structure:
 {
     "ats_score": 90,
     "job_match": 85,
@@ -35,5 +36,10 @@ Return ONLY valid JSON.
     ]
 }
 
-Do not write anything except JSON.
+Important rules:
+- Return only valid JSON.
+- Use integers for ats_score and job_match between 0 and 100.
+- Keep the summary concise but meaningful.
+- Include only relevant skills and actionable suggestions.
+- Do not include markdown formatting, comments, or extra text.
 """
